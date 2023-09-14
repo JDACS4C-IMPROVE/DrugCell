@@ -6,12 +6,19 @@ import networkx.algorithms.dag as nxadag
 import numpy as np
 import torch
 import torch.nn as nn
-
+import scipy.stats
 
 def pearson_corr(x, y):
     xx = x - torch.mean(x)
     yy = y - torch.mean(y)
     return torch.sum(xx*yy) / (torch.norm(xx, 2)*torch.norm(yy,2))
+
+def spearman_corr(x, y):
+    x_cpu = x.cpu().numpy()
+    y_cpu = y.cpu().numpy()
+    corr, _ = scipy.stats.spearmanr(x_cpu, y_cpu)
+    return corr
+
 
 def load_ontology(file_name, gene2id_mapping):
     dG = nx.DiGraph()
