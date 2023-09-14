@@ -16,7 +16,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchmetrics.functional import mean_absolute_error
-from scipy.stats import spearmanr
+#from scipy.stats import spearmanr
 #import code.utils.util
 from code.utils.util import *
 from code.drugcell_NN import *
@@ -24,6 +24,7 @@ import argparse
 import numpy as np
 import time
 from time import time
+torch.cuda.empty_cache()
 #import sklearn
 #from sklearn.metrics import r2_score, mean_absolute_error
 #from scipy.stats import pearsonr, spearmanr
@@ -70,15 +71,15 @@ def calc_pcc(x, y):
     return torch.sum(xx*yy) / (torch.norm(xx, 2)*torch.norm(yy,2))
 
 
-def spearman_corr(x, y):
-    x_rank = torch.argsort(torch.argsort(x))
-    y_rank = torch.argsort(torch.argsort(y))
-    rank_diff = x_rank - y_rank
-    n = len(x)
-    numerator = 6 * torch.sum(rank_diff**2)
-    denominator = n * (n**2 - 1)
-    correlation = 1 - numerator / denominator
-    return correlation
+#def spearman_corr(x, y):
+#    x_rank = torch.argsort(torch.argsort(x))
+#    y_rank = torch.argsort(torch.argsort(y))
+#    rank_diff = x_rank - y_rank
+#    n = len(x)
+#    numerator = 6 * torch.sum(rank_diff**2)
+#    denominator = n * (n**2 - 1)
+#    correlation = 1 - numerator / denominator
+#    return correlation
 
 
 def r2_score(y_true, y_pred):
@@ -202,6 +203,9 @@ def main(params):
     test_corr_list = []
     test_scc_list = []
     test_r2_list = []
+    early_stopping_patience = 5  
+    best_validation_loss = float('inf')
+    epochs_no_improvement = 0
     for name, param in model.named_parameters():
         term_name = name.split('_')[0]
         if '_direct_gene_layer.weight' in name:
@@ -269,12 +273,11 @@ def main(params):
         train_predictions = np.array([p.cpu() for preds in train_predict for p in preds],dtype = np.float)
         train_predictions = train_predictions[0:len(train_predictions)]
         train_labels = np.array([l.cpu() for label in train_label_gpu for l in label],dtype = np.float)
-        train_scc = spearmanr(train_labels, train_predictions)[0]
+        train_scc = spearman_corr(train_predict, train_label_gpu)
         train_scc_list.append(train_scc)
         model.eval()
 
         test_predict = torch.zeros(0,0).cuda(CUDA_ID)
-        loss_fn = nn.MSELoss()
         test_loss = 0.0
         num_samples = 0
         tissue = []
@@ -288,12 +291,13 @@ def main(params):
             keys = [i for i in feature_dict for x in values if feature_dict [i]== x ]
             tissue = [i.split(';')[0] for i in keys]
             drug = [i.split(';')[1] for i in keys]
+            loss = nn.MSELoss()
+            test_loss += loss(aux_out_map['final'], cuda_labels)
             if test_predict.size()[0] == 0:
                 test_predict = aux_out_map['final'].data
             else:
                 test_predict = torch.cat([test_predict, aux_out_map['final'].data], dim=0)
-        batch_loss = loss_fn(aux_out_map['final'], cuda_labels)
-        test_loss += batch_loss.item() * len(inputdata)
+        test_loss_a = test_loss / len(inputdata)
         num_samples += len(inputdata)
         logger.info(
             "\t **** TEST ****   "
@@ -310,10 +314,11 @@ def main(params):
         test_mean_absolute_error = mean_absolute_error(test_label_gpu, test_predict)
         test_r2 = r2_score(test_label_gpu, test_predict)
         #test_rmse_a = np.sqrt(np.mean((predictions - labels)**2))
-        test_loss_a = test_loss / len(test_loader)
+        #test_loss_a = test_loss / len(test_loader)
         test_loss_list.append(test_loss_a)
         test_corr_list.append(test_pearson_a.cpu().detach().numpy())
-        test_scc_list.append(test_spearman_a.cpu().detach().numpy())
+        print(test_spearman_a)
+        test_scc_list.append(test_spearman_a)
         epoch_end_time = time()
         if epoch == 0:
             min_test_loss = test_loss_a
@@ -321,7 +326,8 @@ def main(params):
             scores['test_pcc'] = test_pearson_a.cpu().detach().numpy().tolist()
             scores['test_MSE'] = test_mean_absolute_error.cpu().detach().numpy().tolist()
             scores['test_r2'] = test_r2.cpu().detach().numpy().tolist()
-            scores['test_scc'] = test_spearman_a.cpu().detach().numpy().tolist()
+ #           scores['test_scc'] = test_spearman_a.cpu().detach().numpy().tolist()
+            scores['test_scc'] = test_spearman_a
             scores['IMPROVE RESULT'] = scores['test_MSE']
         if test_spearman_a < min_test_loss:
             min_test_loss = test_loss_a
@@ -329,7 +335,8 @@ def main(params):
             scores['test_pcc'] = test_pearson_a.cpu().detach().numpy().tolist()
             scores['test_MSE'] = test_mean_absolute_error.cpu().detach().numpy().tolist()
             scores['test_r2'] = test_r2.cpu().detach().numpy().tolist()
-            scores['test_scc'] = test_spearman_a.cpu().detach().numpy().tolist()
+            scores['test_scc'] = test_spearman_a
+#            scores['test_scc'] = test_spearman_a.cpu().detach().numpy().tolist()
             scores['IMPROVE RESULT'] = scores['test_MSE']
         if test_spearman_a >= max_corr:
             max_corr = test_spearman_a
@@ -340,6 +347,17 @@ def main(params):
 
         epoch_start_time = epoch_end_time
         ckpt.ckpt_epoch(epoch, test_loss_a)
+        if test_loss_a < best_validation_loss:
+            best_validation_loss = test_loss_a
+            epochs_no_improvement = 0
+        else:
+            epochs_no_improvement += 1
+        
+        # Check for early stopping
+        if epochs_no_improvement >= early_stopping_patience:
+            logger.info(f"Early stopping after {epoch} epochs with no improvement.")
+            break
+        
     torch.save(model, model_save_folder + '/model_final.pt')    
     print("Best performed model (epoch)\t%d" % best_model)
 #    torch.save(save_top_model.format('epoch', '0', best_model))
