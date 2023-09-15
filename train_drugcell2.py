@@ -297,7 +297,7 @@ def main(params):
                 test_predict = aux_out_map['final'].data
             else:
                 test_predict = torch.cat([test_predict, aux_out_map['final'].data], dim=0)
-        test_loss_a = test_loss / len(inputdata)
+        test_loss_a = test_loss.item() / len(inputdata)
         num_samples += len(inputdata)
         logger.info(
             "\t **** TEST ****   "
