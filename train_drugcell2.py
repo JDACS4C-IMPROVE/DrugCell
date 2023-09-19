@@ -24,6 +24,8 @@ import argparse
 import numpy as np
 import time
 from time import time
+from scipy.stats import SpearmanRConstantInputWarning
+warnings.filterwarnings("ignore", category=SpearmanRConstantInputWarning)
 torch.cuda.empty_cache()
 #import sklearn
 #from sklearn.metrics import r2_score, mean_absolute_error
@@ -352,7 +354,7 @@ def main(params):
             epochs_no_improvement = 0
         else:
             epochs_no_improvement += 1
-        
+            
         # Check for early stopping
         if epochs_no_improvement >= early_stopping_patience:
             logger.info(f"Early stopping after {epoch} epochs with no improvement.")
@@ -363,7 +365,7 @@ def main(params):
 #    torch.save(save_top_model.format('epoch', '0', best_model))
     cols = ['epoch', 'train_loss', 'train_corr', 'test_loss', 'test_corr', 'test_scc_list']
     epoch_train_test_df = pd.DataFrame(columns=cols, index=range(params['epochs']))
-    epoch_train_test_df['epoch'] = epoch_list
+    epoch_train_test_df['epoch'] = epoch_list[:-1]
     epoch_train_test_df['train_loss'] = train_loss_list
     epoch_train_test_df['train_corr'] = train_corr_list
     epoch_train_test_df['train_scc'] = train_scc_list    
