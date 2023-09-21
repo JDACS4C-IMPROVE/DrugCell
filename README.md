@@ -13,7 +13,7 @@ cell response to treatments.
 
 # Requirements
 
-* conda>=23.5
+**conda>=23.5**
 
 # IMPROVE PROJECT INSTRUCTIONS
 
@@ -26,46 +26,46 @@ The IMPROVE project is currently using the develop branch
 
 ## Using Conda
 
-** Create environment
+**Create environment**
 
 ```
 conda env create -f drugcell_conda.yml
 ```
 
-** Activate the environment
+**Activate the environment**
 
 ```
 conda activate drugcell_python
 ```
 
-** Download Drugcell
+**Download Drugcell**
 
 ```
 git clone -b develop https://github.com/JDACS4C-IMPROVE/DrugCell.git
 cd DrugCell
 ```
 
-** Install CANDLE package
+**Install CANDLE package**
 
 ```
 pip install git+https://github.com/ECP-CANDLE/candle_lib@develop
 ```
 
-** Example usuage without container (running DrugCell)
+**Example usuage without container (running DrugCell)***
 
-*** Preprocess (optional)
+**Preprocess (optional)**
 
 ```
 bash preprocess.sh  $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR
 ```
 
-*** Training
+**Training**
 ```
 bash train.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR
 
 ```
 
-*** Testing
+**Testing**
 ```
 bash infer.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR
 ```
@@ -101,8 +101,6 @@ Execute with container
 ```
 singularity exec -nv DrugCell.sif train.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR
 ```
-
-
 
 # AUTHORS NOTES:
 
