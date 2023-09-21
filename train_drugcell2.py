@@ -25,8 +25,8 @@ import numpy as np
 import time
 from time import time
 import warnings
-from scipy.stats import SpearmanRConstantInputWarning
-warnings.filterwarnings("ignore", category=SpearmanRConstantInputWarning)
+#from scipy.stats import SpearmanRConstantInputWarning
+warnings.filterwarnings("ignore")
 torch.cuda.empty_cache()
 #import sklearn
 #from sklearn.metrics import r2_score, mean_absolute_error
@@ -320,7 +320,6 @@ def main(params):
         #test_loss_a = test_loss / len(test_loader)
         test_loss_list.append(test_loss_a)
         test_corr_list.append(test_pearson_a.cpu().detach().numpy())
-        print(test_spearman_a)
         test_scc_list.append(test_spearman_a)
         epoch_end_time = time()
         if epoch == 0:

@@ -10,48 +10,74 @@ subsystems in the hierarchy that are important to the model's prediction,
 warranting further investigation on underlying biological mechanisms of 
 cell response to treatments. 
 
+
+# Requirements
+
+* conda>=23.5
+
 # IMPROVE PROJECT INSTRUCTIONS
 
-The improve project requires standarized interfaces for data preprocessing, training and inference
+The improve project [_IMPROVE Project_](https://github.com/JDACS4C-IMPROVE)requires standarized interfaces for data preprocessing, training and inference, follow the code for drugcell in [_DrugCell_](https://github.com/JDACS4C-IMPROVE/DrugCell.git)
 
-# DATA PREPROCESSING
+#Installation
 
-To create the data run the preprocess.sh code to download the data. To use a custom dataset, set the 'improve_analysis" flag to 'yes' in the DrugCell_params.txt file
-
-# Model Training
-
-1. train.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR 
-
-CANDLE_DATA_DIR=<PATH OF REPO/Data/>
-
-Note: The train.sh script will download the original authors data if the Data directory is empty
-
-      * set CUDA_VISIBLE_DEVICES to a GPU device ID to make this devices visible to the application.
-      * CANDLE_DATA_DIR, path to base CANDLE directory for model input and outputs.
-      * CANDLE_CONFIG , path to CANDLE config file must be inside CANDLE_DATA_DIR.
-
-## Example
-
-   * git clone 
-   * cd DrugCell
-   * check permissions if all scripts are executable
-   * ./infer.sh 1 data
+The IMPROVE project is currently using the develop branch
 
 
-## Setting up environment
+## Using Conda
 
-This model is curated as part of the [_IMPROVE Project_](https://github.com/JDACS4C-IMPROVE)
+** Create environment
+
+```
+conda env create -f drugcell_conda.yml
+```
+
+** Activate the environment
+
+```
+conda activate drugcell_python
+```
+
+** Download Drugcell
+
+```
+git clone -b develop https://github.com/JDACS4C-IMPROVE/DrugCell.git
+cd DrugCell
+```
+
+** Install CANDLE package
+
+```
+pip install git+https://github.com/ECP-CANDLE/candle_lib@develop
+```
+
+** Example usuage without container (running DrugCell)
+
+*** Preprocess (optional)
+
+```
+bash preprocess.sh  $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR
+```
+
+*** Training
+```
+bash train.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR
+
+```
+
+*** Testing
+```
+bash infer.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR
+```
 
 
-#### NEW STEPS (using pip only)
+## Using pip [RECOMMENDED]
 
-## USE CODE BLOCK
 ```
 pip install --upgrade pip
 python3 -m pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 torchmetrics==0.11.1 --extra-index-url https://download.pytorch.org/whl/cu113
 python3 -m pip install networkx
 python3 -m pip install git+https://github.com/ECP-CANDLE/candle_lib@develop
-cd /usr/local
 git clone -b develop https://github.com/JDACS4C-IMPROVE/DrugCell.git
 cd DrugCell
 python3 -m pip install -r requirements.txt
@@ -60,7 +86,25 @@ chmod a+x *.py
 sh train.sh 1 data
 ```
 
-The following steps are included in the def file
+# Example usage with container
+
+Model definition file 'DrugCell.def' is located in [_here_](https://github.com/JDACS4C-IMPROVE/Singularity/tree/develop/definitions)
+
+Build Singularity
+
+```
+singularity build --fakeroot DrugCell.sif DrugCell.def
+```
+
+Execute with container
+
+```
+singularity exec -nv DrugCell.sif train.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR
+```
+
+
+
+# AUTHORS NOTES:
 
 
 # DrugCell release v1.0

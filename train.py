@@ -4,6 +4,7 @@ from train_drugcell2 import main
 import json
 from json import JSONEncoder
 from preprocessing_new import mkdir
+#from scipy.stats import SpearmanRConstantInputWarning
 
 file_path = os.path.dirname(os.path.realpath(__file__))
 

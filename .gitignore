@@ -1,5 +1,6 @@
 .secrets.baseline
 
+data/*
 *~
 *.~
 # mac files
