@@ -42,8 +42,6 @@ Note: The train.sh script will download the original authors data if the Data di
 
 This model is curated as part of the [_IMPROVE Project_](https://github.com/JDACS4C-IMPROVE)
 
-### Install Conda version version 22.11.1
-
 
 #### NEW STEPS (using pip only)
 
