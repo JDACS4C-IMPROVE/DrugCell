@@ -1,7 +1,7 @@
 [Global_Params]
 
 model_name='DrugCell'
-data_url="http://drugcell.ucsd.edu/downloads/data.tgz"
+data_url="https://ftp.mcs.anl.gov/pub/candle/public/improve/model_curation_data/DrugCell/drugcell_data.tar.gz"
 improve_data_url="https://ftp.mcs.anl.gov/pub/candle/public/improve/benchmarks/single_drug_drp/benchmark-data-pilot1/csa_data/raw_data"
 train_data_type='CCLE'
 data_type='CTRPv2,CCLE,GDSCv1,GDSCv2,gCSI'
