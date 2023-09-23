@@ -105,7 +105,7 @@ singularity build --fakeroot DrugCell.sif definitions/DrugCell.def
 Execute with container
 
 ```
-singularity exec -nv DrugCell.sif train.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR
+singularity exec --nv DrugCell.sif train.sh $CUDA_VISIBLE_DEVICES $CANDLE_DATA_DIR
 ```
 
 # AUTHORS NOTES:
