@@ -48,7 +48,6 @@ csa_data/
 *.html
 *.list
 data/
-NOTEBOOK/
 Data_Curation_final/
 # Installer logs
 pip-log.txt
