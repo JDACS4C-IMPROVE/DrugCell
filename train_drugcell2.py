@@ -360,7 +360,8 @@ def main(params):
             logger.info(f"Early stopping after {epoch} epochs with no improvement.")
             break
         
-    torch.save(model, model_save_folder + '/model_final.pt')    
+    torch.save(model, model_save_folder + '/model_final.pt')
+    print(epoch_list)
     print("Best performed model (epoch)\t%d" % best_model)
 #    torch.save(save_top_model.format('epoch', '0', best_model))
     cols = ['epoch', 'train_loss', 'train_corr', 'test_loss', 'test_corr', 'test_scc_list']

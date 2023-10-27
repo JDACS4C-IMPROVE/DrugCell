@@ -45,10 +45,11 @@ git clone -b develop https://github.com/JDACS4C-IMPROVE/DrugCell.git
 cd DrugCell
 ```
 
-**Install CANDLE package**
+**Install Torch for CUDA and CANDLE package**
 
 ```
-pip install git+https://github.com/ECP-CANDLE/candle_lib@develop
+python3 -m pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 torchmetrics==0.11.1 --extra-index-url https://download.pytorch.org/whl/cu113
+python3 -m pip install git+https://github.com/ECP-CANDLE/candle_lib@develop
 ```
 
 **Example usuage without container (running DrugCell)***
@@ -90,10 +91,15 @@ sh train.sh 1 data
 
 Model definition file 'DrugCell.def' is located in [_here_](https://github.com/JDACS4C-IMPROVE/Singularity/tree/develop/definitions)
 
+```
+git clone -b develop https://github.com/JDACS4C-IMPROVE/Singularity.git
+cd Singularity
+```
+
 Build Singularity
 
 ```
-singularity build --fakeroot DrugCell.sif DrugCell.def
+singularity build --fakeroot DrugCell.sif definitions/DrugCell.def
 ```
 
 Execute with container
