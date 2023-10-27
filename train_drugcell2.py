@@ -365,8 +365,8 @@ def main(params):
     print("Best performed model (epoch)\t%d" % best_model)
 #    torch.save(save_top_model.format('epoch', '0', best_model))
     cols = ['epoch', 'train_loss', 'train_corr', 'test_loss', 'test_corr', 'test_scc_list']
-    epoch_train_test_df = pd.DataFrame(columns=cols, index=range(params['epochs']))
-    epoch_train_test_df['epoch'] = epoch_list[-1] + 1
+    epoch_train_test_df = pd.DataFrame(columns=cols, index=range(len(epoch_list)))
+    epoch_train_test_df['epoch'] = epoch_list
     epoch_train_test_df['train_loss'] = train_loss_list
     epoch_train_test_df['train_corr'] = train_corr_list
     epoch_train_test_df['train_scc'] = train_scc_list    
