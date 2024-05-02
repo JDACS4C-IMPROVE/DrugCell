@@ -71,7 +71,8 @@ val_ml_data_dir = os.path.join(current_working_dir, f"ml_data/{source}/")
 model_outdir = os.path.join(current_working_dir, f"out_models_hpo/{source}/")
 #log_dir = "hpo_logs/"
 log_dir = f"{source}_dh_hpo_logs/"
-image_file= os.path.join(current_working_dir + "/images/DrugCell_tianshu:0.0.1-20240422.sif")
+#image_file= os.path.join(current_working_dir + "/images/DrugCell_tianshu:0.0.1-20240422.sif")
+image_file = '/homes/ac.rgnanaolivu/improve_data_dir/DrugCell/images//DrugCell_tianshu:0.0.1-20240429.sif'
 subprocess_bashscript = "subprocess_train.sh"
 current_date = datetime.now().strftime("%Y-%m-%d")
 #train_file = train_ml_data_dir + "/train_data.pt"
@@ -91,35 +92,45 @@ def run(job, optuna_trial=None):
     eps_adam = job.parameters['eps_adam']
     beta_kl = job.parameters['beta_kl']
     model_outdir_job_id = model_outdir + f"/{job_id}"
-    command = f"bash {subprocess_bashscript} {train_ml_data_dir} {val_ml_data_dir} {model_outdir_job_id} {epochs} {batch_size} {learning_rate} {direct_gene_weight_param} {num_hiddens_genotype} {num_hiddens_final} {inter_loss_penalty} {eps_adam} {beta_kl}"
-    print(command)
-    subprocess_res = subprocess.run(
-        [
-            "bash", subprocess_bashscript,
-            str(train_ml_data_dir),
-            str(val_ml_data_dir),
-            str(model_outdir_job_id),
-            str(epochs),
-            str(batch_size),
-            str(learning_rate),
-            str(direct_gene_weight_param),
-            str(num_hiddens_genotype),
-            str(num_hiddens_final),
-            str(inter_loss_penalty),
-            str(eps_adam),
-            str(beta_kl)
-        ], 
-        capture_output=True, text=True, check=True
-    )
-#    cmd = "singularity exec --nv --bind " +  str(current_working_dir) + " " +  str(image_file) + " " + subprocess_bashscript + " " + str(train_ml_data_dir) + " " + str(val_ml_data_dir) + " " + str(model_outdir_job_id)
-#    subprocess_res = subprocess.run(["singularity", "exec", "--nv", "--bind",
-#                                     str(current_working_dir),
-#                                     str(image_file),
-#                                     subprocess_bashscript,
-#                                     str(train_ml_data_dir),
-#                                     str(val_ml_data_dir),
-#                                     str(model_outdir_job_id)], 
-#                                    capture_output=True, text=True, check=True)
+#    command = f"bash {subprocess_bashscript} {train_ml_data_dir} {val_ml_data_dir} {model_outdir_job_id} {epochs} {batch_size} {learning_rate} {direct_gene_weight_param} {num_hiddens_genotype} {num_hiddens_final} {inter_loss_penalty} {eps_adam} {beta_kl}"
+#    print(command)
+#    subprocess_res = subprocess.run(
+#        [
+#            "bash", subprocess_bashscript,
+#            str(train_ml_data_dir),
+#            str(val_ml_data_dir),
+#            str(model_outdir_job_id),
+#            str(epochs),
+#            str(batch_size),
+#            str(learning_rate),
+#            str(direct_gene_weight_param),
+#            str(num_hiddens_genotype),
+#            str(num_hiddens_final),
+#            str(inter_loss_penalty),
+#            str(eps_adam),
+#            str(beta_kl)
+#        ], 
+#        capture_output=True, text=True, check=True
+#    )
+    cmd = "singularity exec --nv --bind " +  str(current_working_dir) + " " +  str(image_file) + " " + subprocess_bashscript + " " + str(train_ml_data_dir) + " " + str(val_ml_data_dir) + " " + str(model_outdir_job_id) + " " + str(epochs) + " " + str(batch_size) + " " + str(learning_rate) + " " + str(direct_gene_weight_param) + " " + str(num_hiddens_genotype) + " " + str(num_hiddens_final) + " " + str(inter_loss_penalty) + " " + str(eps_adam) + " " + str(beta_kl)
+    print(cmd)
+    subprocess_res = subprocess.run(["singularity", "exec", "--nv", "--bind",
+                                     str(current_working_dir),
+                                     str(image_file),
+                                     subprocess_bashscript,
+                                     str(train_ml_data_dir),
+                                     str(val_ml_data_dir),
+                                     str(model_outdir_job_id),
+                                     str(epochs),
+                                     str(batch_size),
+                                     str(learning_rate),
+                                     str(direct_gene_weight_param),
+                                     str(num_hiddens_genotype),
+                                     str(num_hiddens_final),
+                                     str(inter_loss_penalty),
+                                     str(eps_adam),
+                                     str(beta_kl)],
+                                    capture_output=True, text=True, check=True)
     print(subprocess_res.stdout)
     print(subprocess_res.stderr)
 
@@ -141,7 +152,7 @@ if __name__ == "__main__":
     from deephyper.evaluator import Evaluator
     t0 = time.time()
     problem = HpProblem()
-    problem.add_hyperparameter((4, 12), "epochs", default_value=10)
+    problem.add_hyperparameter((1, 3), "epochs", default_value=2)
     problem.add_hyperparameter((8, 512, "log-uniform"), "batch_size", default_value=64)
     problem.add_hyperparameter((0.0001,  1e-2, "log-uniform"), "learning_rate", default_value=0.001)
     problem.add_hyperparameter((0.0, 0.3), "direct_gene_weight_param",default_value=0.1)  # continuous hyperparameter
