@@ -72,8 +72,9 @@ model_outdir = os.path.join(current_working_dir, f"out_models_hpo/{source}/")
 #log_dir = "hpo_logs/"
 log_dir = f"{source}_dh_hpo_logs/"
 #image_file= os.path.join(current_working_dir + "/images/DrugCell_tianshu:0.0.1-20240422.sif")
-image_file = '/homes/ac.rgnanaolivu/improve_data_dir/DrugCell/images//DrugCell_tianshu:0.0.1-20240429.sif'
-subprocess_bashscript = "subprocess_train.sh"
+#image_file = '/homes/ac.rgnanaolivu/improve_data_dir/DrugCell/images//DrugCell_tianshu:0.0.1-20240429.sif'
+image_file = '/home/rgnanaolivu/improve/Singularity/images/images/DrugCell_tianshu:0.0.1-20240429.sif'
+subprocess_bashscript = "subprocess_train_singularity.sh"
 current_date = datetime.now().strftime("%Y-%m-%d")
 #train_file = train_ml_data_dir + "/train_data.pt"
 #test_file = train_ml_data_dir + "/test_data.pt"
@@ -92,45 +93,27 @@ def run(job, optuna_trial=None):
     eps_adam = job.parameters['eps_adam']
     beta_kl = job.parameters['beta_kl']
     model_outdir_job_id = model_outdir + f"/{job_id}"
-#    command = f"bash {subprocess_bashscript} {train_ml_data_dir} {val_ml_data_dir} {model_outdir_job_id} {epochs} {batch_size} {learning_rate} {direct_gene_weight_param} {num_hiddens_genotype} {num_hiddens_final} {inter_loss_penalty} {eps_adam} {beta_kl}"
-#    print(command)
-#    subprocess_res = subprocess.run(
-#        [
-#            "bash", subprocess_bashscript,
-#            str(train_ml_data_dir),
-#            str(val_ml_data_dir),
-#            str(model_outdir_job_id),
-#            str(epochs),
-#            str(batch_size),
-#            str(learning_rate),
-#            str(direct_gene_weight_param),
-#            str(num_hiddens_genotype),
-#            str(num_hiddens_final),
-#            str(inter_loss_penalty),
-#            str(eps_adam),
-#            str(beta_kl)
-#        ], 
-#        capture_output=True, text=True, check=True
-#    )
-    cmd = "singularity exec --nv --bind " +  str(current_working_dir) + " " +  str(image_file) + " " + subprocess_bashscript + " " + str(train_ml_data_dir) + " " + str(val_ml_data_dir) + " " + str(model_outdir_job_id) + " " + str(epochs) + " " + str(batch_size) + " " + str(learning_rate) + " " + str(direct_gene_weight_param) + " " + str(num_hiddens_genotype) + " " + str(num_hiddens_final) + " " + str(inter_loss_penalty) + " " + str(eps_adam) + " " + str(beta_kl)
+    command = f"bash {subprocess_bashscript} {train_ml_data_dir} {val_ml_data_dir} {model_outdir_job_id} {epochs} {batch_size} {learning_rate} {direct_gene_weight_param} {num_hiddens_genotype} {num_hiddens_final} {inter_loss_penalty} {eps_adam} {beta_kl}"
+    print(command)
+    subprocess_res = subprocess.run(
+        [
+            "bash", subprocess_bashscript,
+            str(train_ml_data_dir),
+            str(val_ml_data_dir),
+            str(model_outdir_job_id),
+            str(epochs),
+            str(batch_size),
+            str(learning_rate),
+            str(direct_gene_weight_param),
+            str(num_hiddens_genotype),
+            str(num_hiddens_final),
+            str(inter_loss_penalty),
+            str(eps_adam),
+            str(beta_kl)
+        ], 
+        capture_output=True, text=True, check=True
+    )
     print(cmd)
-    subprocess_res = subprocess.run(["singularity", "exec", "--nv", "--bind",
-                                     str(current_working_dir),
-                                     str(image_file),
-                                     subprocess_bashscript,
-                                     str(train_ml_data_dir),
-                                     str(val_ml_data_dir),
-                                     str(model_outdir_job_id),
-                                     str(epochs),
-                                     str(batch_size),
-                                     str(learning_rate),
-                                     str(direct_gene_weight_param),
-                                     str(num_hiddens_genotype),
-                                     str(num_hiddens_final),
-                                     str(inter_loss_penalty),
-                                     str(eps_adam),
-                                     str(beta_kl)],
-                                    capture_output=True, text=True, check=True)
     print(subprocess_res.stdout)
     print(subprocess_res.stderr)
 

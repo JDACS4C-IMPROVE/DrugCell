@@ -73,6 +73,8 @@ epochs=10
 
 image_file='/homes/ac.rgnanaolivu/improve_data_dir/DrugCell/images/DrugCell_tianshu:0.0.1-20240429.sif'
 
+module load PrgEnv-gnu/8.5.0
+conda activate  /home/rgnanaolivu/improve/dhenv
 
 
 cmd="singularity exec --nv --bind ${IMPROVE_MODEL_DIR} ${image_file} python DrugCell_train_improve.py --train_ml_data_dir=$train_ml_data_dir --val_ml_data_dir=$val_ml_data_dir --model_outdir=$model_outdir --epochs=$epochs --batch_size=$batch_size --learning_rate=$learning_rate --direct_gene_weight_param=$direct_gene_weight_param --num_hiddens_genotype=$num_hiddens_genotype --num_hiddens_final=$num_hiddens_final --inter_loss_penalty=$inter_loss_penalty --eps_adam=$eps_adam --beta_kl=$beta_kl --cuda_name=$CUDA_VISIBLE_DEVICES"
