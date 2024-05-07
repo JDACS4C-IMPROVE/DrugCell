@@ -23,6 +23,7 @@ num_hiddens_final=$9
 inter_loss_penalty=${10}
 eps_adam=${11}
 beta_kl=${12}
+CUDA_VISIBLE_DEVICES=${13}
 echo "train_ml_data_dir: $train_ml_data_dir"
 echo "val_ml_data_dir:   $val_ml_data_dir"
 echo "model_outdir:      $model_outdir"
@@ -43,7 +44,8 @@ echo "python DrugCell_train_improve.py \\
   --num_hiddens_final=$num_hiddens_final \\
   --inter_loss_penalty=$inter_loss_penalty \\
   --eps_adam=$eps_adam \\
-  --beta_kl=$beta_kl"
+  --beta_kl=$beta_kl \\
+  --cuda_name" \\
 
 python DrugCell_train_improve.py \
   --train_ml_data_dir=$train_ml_data_dir \
@@ -56,7 +58,9 @@ python DrugCell_train_improve.py \
   --num_hiddens_genotype=$num_hiddens_genotype \
   --num_hiddens_final=$num_hiddens_final \
   --inter_loss_penalty=$inter_loss_penalty \
-  --eps_adam=$eps_adam --beta_kl=$beta_kl \
-
+  --eps_adam=$eps_adam \
+  --beta_kl=$beta_kl \
+  --cuda_name=$CUDA_VISIBLE_DEVICES
+  
 conda deactivate
 echo "Deactivated conda env $CONDA_ENV"

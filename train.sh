@@ -5,7 +5,7 @@
 # arg 3 CANDLE_CONFIG
 
 ### Path to your CANDLEized model's main Python script###
-CANDLE_MODEL=drugcell_GDSC_script_HPO.py
+CANDLE_MODEL=DrugCell_train_improve.py
 
 ### Set env if CANDLE_MODEL is not in same directory as this script
 IMPROVE_MODEL_DIR=${IMPROVE_MODEL_DIR:-$( dirname -- "$0" )}
@@ -68,7 +68,7 @@ echo "using CANDLE_CONFIG ${CANDLE_CONFIG}"
 # Set up environmental variables and execute model
 echo "activating environment"
 . /homes/ac.rgnanaolivu/miniconda3/etc/profile.d/conda.sh
-conda activate rohan_python
+conda activate drugcell_python
 export TF_CPP_MIN_LOG_LEVEL=3
 
 # Set up environmental variables and execute model
