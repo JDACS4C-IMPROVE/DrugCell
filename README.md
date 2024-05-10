@@ -53,6 +53,30 @@ This model is part of the IMPROVE PROJECT
 * step 5: pip install git+https://github.com/ECP-CANDLE/candle_lib@0d32c6bb97ace0370074194943dbeaf9019e6503
 
 
+
+## STEPS to Running DrugCell DeepHyper on Polaris
+
+
+## TODO: Image path is hard coded '/home/rgnanaolivu/improve/Singularity/images/images/DrugCell_tianshu:0.0.1-20240429.sif'
+## feature/deephyper [https://github.com/JDACS4C-IMPROVE/DrugCell/tree/feature/deephyper]
+## To create container Def file found in https://github.com/JDACS4C-IMPROVE/Singularity/tree/feature/deephyper/definitions
+** Install miniconda if needed
+
+* step 1: conda create -p dhenv python=3.9 pip -y
+* step 2: conda activate dhenv
+* step 3: pip install --upgrade pip 
+* step 4: conda install mpi4py --yes
+* step 5: git clone -b develop git@github.com:deephyper/deephyper.git
+* step 6: pip install -e "deephyper/[hps,mpi]"
+* step 7: git clone git clone https://github.com/JDACS4C-IMPROVE/DrugCell.git
+* step 8: cd DrugCell
+* step 9: git checkout feature/deephyper
+* step 8: qsub -A IMPROVE_Aim1 -I -l select=1 -l filesystems=home:eagle -l walltime=01:00:00 -q debug
+* step 9: module load PrgEnv-gnu/8.5.0
+* step 10: conda activate $PWD/dhenv/
+* step 12: cd DrugCell
+* step 11: [path to installed mpirun]/mpirun -np 5 python hpo_subprocess.py
+
 # DrugCell release v1.0
 DrugCell v1.0 was trained using (cell line, drug) pairs, but 
 it can be generalized to estimate response of any cells to any drugs if:
