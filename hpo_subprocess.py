@@ -36,13 +36,15 @@ if not MPI.Is_initialized():
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
-#print('rank is {0}'.format(rank))
-num_gpus_per_node = 4
-gpu_id0 = 4
+print('rank is {0}'.format(rank))
+num_gpus_per_node = 3
+gpu_id0 = 0
 #os.environ["CUDA_VISIBLE_DEVICES"] = str(rank % num_gpus_per_node + gpu_id0)
-os.environ["CUDA_VISIBLE_DEVICES"] = "cuda:" + str(rank % num_gpus_per_node +gpu_id0)
-#os.environ["CUDA_VISIBLE_DEVICES"] = 'cuda:5' 
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "cuda:" + str(rank % num_gpus_per_node)
+#os.environ["CUDA_VISIBLE_DEVICES"] = 'cuda:0' 
+CUDA_VISIBLE_DEVICES = os.environ["CUDA_VISIBLE_DEVICES"]
+print(CUDA_VISIBLE_DEVICES)
+logging.info("cuda visible device is {0}".format(CUDA_VISIBLE_DEVICES))
 
 logging.basicConfig(
     filename=f"deephyper.{rank}.log", # optional if we want to store the logs to disk
@@ -74,14 +76,14 @@ log_dir = f"{source}_dh_hpo_logs/"
 #image_file= os.path.join(current_working_dir + "/images/DrugCell_tianshu:0.0.1-20240422.sif")
 #image_file = '/homes/ac.rgnanaolivu/improve_data_dir/DrugCell/images//DrugCell_tianshu:0.0.1-20240429.sif'
 image_file = '/home/rgnanaolivu/improve/Singularity/images/images/DrugCell_tianshu:0.0.1-20240429.sif'
-subprocess_bashscript = "subprocess_train_singularity.sh"
+subprocess_bashscript = current_working_dir + "/subprocess_train_singularity.sh"
 current_date = datetime.now().strftime("%Y-%m-%d")
 #train_file = train_ml_data_dir + "/train_data.pt"
 #test_file = train_ml_data_dir + "/test_data.pt"
 
 @profile
 def run(job, optuna_trial=None):
-    print(job)
+    logging.info(job)
     job_id = job.id
     epochs = job.parameters['epochs']
     batch_size = job.parameters['batch_size']
@@ -93,8 +95,9 @@ def run(job, optuna_trial=None):
     eps_adam = job.parameters['eps_adam']
     beta_kl = job.parameters['beta_kl']
     model_outdir_job_id = model_outdir + f"/{job_id}"
-    command = f"bash {subprocess_bashscript} {train_ml_data_dir} {val_ml_data_dir} {model_outdir_job_id} {epochs} {batch_size} {learning_rate} {direct_gene_weight_param} {num_hiddens_genotype} {num_hiddens_final} {inter_loss_penalty} {eps_adam} {beta_kl}"
+    command = f"bash {subprocess_bashscript} {train_ml_data_dir} {val_ml_data_dir} {model_outdir_job_id} {epochs} {batch_size} {learning_rate} {direct_gene_weight_param} {num_hiddens_genotype} {num_hiddens_final} {inter_loss_penalty} {eps_adam} {beta_kl} {CUDA_VISIBLE_DEVICES}"
     print(command)
+    logging.info(command)
     subprocess_res = subprocess.run(
         [
             "bash", subprocess_bashscript,
@@ -109,13 +112,13 @@ def run(job, optuna_trial=None):
             str(num_hiddens_final),
             str(inter_loss_penalty),
             str(eps_adam),
-            str(beta_kl)
+            str(beta_kl),str(CUDA_VISIBLE_DEVICES),
         ], 
         capture_output=True, text=True, check=True
     )
     print(cmd)
-    print(subprocess_res.stdout)
-    print(subprocess_res.stderr)
+    logging.info(subprocess_res.stdout)
+    logging.info(subprocess_res.stderr)
 
     f = open(model_outdir_job_id + '/test_scores.json')
     val_scores = json.load(f)
@@ -134,6 +137,9 @@ if __name__ == "__main__":
     from deephyper.search.hps import CBO
     from deephyper.evaluator import Evaluator
     t0 = time.time()
+    print('running')
+    logging.info('running')
+    
     problem = HpProblem()
     problem.add_hyperparameter((1, 3), "epochs", default_value=2)
     problem.add_hyperparameter((8, 512, "log-uniform"), "batch_size", default_value=64)
@@ -148,6 +154,7 @@ if __name__ == "__main__":
     with Evaluator.create(run, method="mpicomm", method_kwargs={"callbacks": [TqdmCallback()]}) as evaluator:
         if evaluator is not None:
             print(problem)
+            logging.info(problem)
             search = CBO(
                 problem,
                 evaluator,
@@ -155,7 +162,6 @@ if __name__ == "__main__":
                 verbose=1)
             results = search.search(max_evals=3)
             results = results.sort_values("m:val_scores", ascending=True)
-            print(results)            
             results.to_csv(model_outdir + "/hpo_results.csv", index=False)
 
 
