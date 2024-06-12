@@ -30,21 +30,6 @@ mpi4py.rc.recv_mprobe = False
 
 from mpi4py import MPI
 
-#if not MPI.Is_initialized():
-#    MPI.Init_thread()
-
-#comm = MPI.COMM_WORLD
-#rank = comm.Get_rank()
-#size = comm.Get_size()
-#local_rank = os.environ["PMI_LOCAL_RANK"]
-#print('rank is {0}'.format(rank))
-#num_gpus_per_node = 3
-#gpu_id0 = 0
-
-mpi4py.rc.initialize = False
-mpi4py.rc.threads = True
-mpi4py.rc.thread_level = "multiple"
-mpi4py.rc.recv_mprobe = False
 
 if not MPI.Is_initialized():
     MPI.Init_thread()
@@ -62,7 +47,7 @@ local_rank = os.environ["PMI_LOCAL_RANK"]
 #logging.info("cuda visible device is {0}".format(CUDA_VISIBLE_DEVICES))
 
 logging.basicConfig(
-    filename=f"deephyper.{rank}.log", # optional if we want to store the logs to disk
+    #filename=f"deephyper.{rank}.log", # optional if we want to store the logs to disk
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s - %(message)s",
     force=True,
@@ -86,8 +71,11 @@ train_ml_data_dir = os.path.join(current_working_dir, f"ml_data/{source}/")
 val_ml_data_dir = os.path.join(current_working_dir, f"ml_data/{source}/")
 
 model_outdir = os.path.join(current_working_dir, f"out_models_hpo/{source}/")
-#log_dir = "hpo_logs/"
 log_dir = f"{source}_dh_hpo_logs/"
+subprocess_bashscript = "subprocess_train_singularity.sh"
+
+#log_dir = "hpo_logs/"
+
 #image_file= os.path.join(current_working_dir + "/images/DrugCell_tianshu:0.0.1-20240422.sif")
 #image_file = '/homes/ac.rgnanaolivu/improve_data_dir/DrugCell/images//DrugCell_tianshu:0.0.1-20240429.sif'
 image_file = '/home/rgnanaolivu/improve/Singularity/images/images/DrugCell_tianshu:0.0.1-20240429.sif'
@@ -128,6 +116,7 @@ def run(job, optuna_trial=None):
             str(inter_loss_penalty),
             str(eps_adam),
             str(beta_kl),
+            str(os.environ["CUDA_VISIBLE_DEVICES"])
         ], 
         capture_output=True, text=True, check=True
     )
@@ -165,19 +154,25 @@ if __name__ == "__main__":
     problem.add_hyperparameter((0.1, 0.5), "inter_loss_penalty", default_value=0.2)
     problem.add_hyperparameter((1e-06, 1e-04), "eps_adam", default_value=1e-05)
     problem.add_hyperparameter((0.0001, 1, "log-uniform"),"beta_kl", default_value=0.001)
-    problem.add_hyperparameter(['100,50,6'],"drug_hiddens", default_value="100,50,6")    
-    with Evaluator.create(run, method="mpicomm", method_kwargs={"callbacks": [TqdmCallback()]}) as evaluator:
+    problem.add_hyperparameter(['100,50,6'],"drug_hiddens", default_value="100,50,6")
+    with Evaluator.create(
+        run, method="mpicomm", method_kwargs={"callbacks": [TqdmCallback()]}
+    ) as evaluator:
+
         if evaluator is not None:
             print(problem)
-            logging.info(problem)
+
             search = CBO(
                 problem,
                 evaluator,
                 log_dir=log_dir,
-                verbose=1)
-            results = search.search(max_evals=100)
+                verbose=1,
+            )
+            max_evals = 100
+            results = search.search(max_evals=max_evals)
             results = results.sort_values("m:val_scores", ascending=True)
             results.to_csv(model_outdir + "/hpo_results.csv", index=False)
-
-
+            results.to_csv(os.path.join(os.environ["IMPROVE_DATA_DIR"], model_outdir, "hpo_results.csv"), index=False)
+    print("current node: ", socket.gethostname(), "; current rank: ", rank, "; local rank", local_rank, "; CUDA_VISIBLE_DEVICE is set to: ", os.environ["CUDA_VISIBLE_DEVICES"])
+    print("Finished deephyper HPO.")
     print("Finished deephyper HPO.")

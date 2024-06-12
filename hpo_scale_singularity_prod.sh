@@ -1,11 +1,12 @@
 #!/bin/bash
-#PBS -l select=2:system=polaris
+#PBS -l select=10:ncpus=64:ngpus=4:system=polaris
 #PBS -l place=scatter
-#PBS -l walltime=00:60:00
-#PBS -q debug
+#PBS -l walltime=00:10:00
+#PBS -q prod
 #PBS -A IMPROVE
 #PBS -l filesystems=home:eagle
 #PBS -N dh_hpo_scale_test
+#PBS -M gnanaolivu.rohandavid@mayo.edu
 
 set -xe
 
@@ -56,5 +57,4 @@ echo PMI_LOCAL_RANK: ${PMI_LOCAL_RANK}
 # set_affinity_gpu_polaris.sh does not seem to work right now
 # but CUDA_VISIBLE_DEVICES was set within hpo_subprocess.py, 
 mpiexec -n ${NTOTRANKS} -host ${RANKS_HOSTS} \
-	--envall ./set_affinity_gpu_polaris.sh python hpo_subprocess_singularity.py
-
+    --envall ./set_affinity_gpu_polaris.sh python hpo_subprocess_singularity.py
